@@ -18,22 +18,27 @@ namespace AstiaTest
 		}
 
 		[Fact]
-		public async Task TestGetAineistoId()
+		public void TestParseAineistoId()
 		{
 			var astia = new Astia();
 			var jaksoAndTunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = "114889", jakso = "102" };
 			var expected = "1193635722";
-			var actual = await astia.GetAineistoId(jaksoAndTunniste);
+			var json = File.ReadAllText("aineistoResult.json");
+			var actual = astia.ParseAineistoResult(json);
 
 			Assert.Equal(expected, actual);
 		}
 
+		[Fact]
+		public void TestParseTiedostResult()
+		{
+			var astia = new Astia();
+			var expected = "5829336113";
+			var json = File.ReadAllText("tiedostoResult.json");
+			var actual = astia.ParseTiedostoResult(json);
 
-
-		// string tiedosto = await GetTiedosto(jaksoAndtunniste, id);
-
-		// return oldUrl;
-
+			Assert.Equal(expected, actual);
+		}
 	}
 
 }

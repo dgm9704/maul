@@ -10,7 +10,7 @@ namespace Astia
 
 	public class Astia
 	{
-		private HttpClient http = new(); // make me lazy
+		private Lazy<HttpClient> http => new(); // make me lazy
 
 		public async Task<string> GetNewUrl(string oldUrl)
 		{
@@ -72,13 +72,13 @@ namespace Astia
 
 		public async Task<string> GetAsync(Uri uri)
 		{
-			var response = await http.GetAsync(uri);
+			var response = await http.Value.GetAsync(uri);
 			return await GetResponseContent(response);
 		}
 
 		public async Task<string> PostAsync(Uri uri, object data)
 		{
-			var response = await http.PostAsJsonAsync(uri, data);
+			var response = await http.Value.PostAsJsonAsync(uri, data);
 			return await GetResponseContent(response);
 		}
 
