@@ -1,8 +1,11 @@
-namespace UusiAstia
+namespace Astia
 {
+	using System;
 	using System.Dynamic;
+	using System.Net.Http;
 	using System.Net.Http.Json;
 	using System.Text.Json.Nodes;
+	using System.Threading.Tasks;
 
 	public class Astia
 	{
@@ -25,14 +28,14 @@ namespace UusiAstia
 			return oldUrl;
 		}
 
-		private async Task<JaksoAndTunniste> GetJaksoAndTunniste(string kuid)
+		public async Task<JaksoAndTunniste> GetJaksoAndTunniste(string kuid)
 		{
 			var response = await http.GetAsync($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
 
 			JaksoAndTunniste jaksoAndTunniste = new();
 			if (response.IsSuccessStatusCode)
 			{
-				jaksoAndTunniste = await response.Content.ReadFromJsonAsync<JaksoAndTunniste>() ?? new JaksoAndTunniste();
+				jaksoAndTunniste = await response.Content.ReadFromJsonAsync<JaksoAndTunniste>();
 			}
 			else
 			{
@@ -43,9 +46,9 @@ namespace UusiAstia
 			return jaksoAndTunniste;
 		}
 
-		private async Task<string> GetAineistoId(JaksoAndTunniste jaksoAndTunniste)
+		public async Task<string> GetAineistoId(JaksoAndTunniste jaksoAndTunniste)
 		{
-			TietoQuery tietoQuery = new() { searchString = $"AY_{jaksoAndTunniste?.at3_ay_tunnus}", searchTarget = "aineisto" };
+			TietoQuery tietoQuery = new() { searchString = $"AY_{jaksoAndTunniste.at3_ay_tunnus}", searchTarget = "aineisto" };
 
 			var response = await http.PostAsJsonAsync("https://astia.narc.fi/uusiastia/aineisto/read.php", tietoQuery);
 			string json = string.Empty;
@@ -60,6 +63,12 @@ namespace UusiAstia
 
 			}
 
+			return ParseAineistoResult(json);
+
+		}
+
+		public string ParseAineistoResult(string json)
+		{
 			dynamic aineistoResult = JsonObject.Parse(json);
 			JsonArray tulokset = aineistoResult["tulokset"];
 			dynamic aineisto = tulokset[0];
@@ -67,13 +76,12 @@ namespace UusiAstia
 			return (string)id;
 		}
 
-		private async Task<string> GetTiedosto(JaksoAndTunniste jaksoAndtunniste, string id)
+		public async Task<string> GetTiedosto(JaksoAndTunniste jaksoAndtunniste, string id)
 		{
 			var response = await http.GetAsync($"https://astia.narc.fi/uusiastia/json/json_tiedostot.php?id={id}");
 			string json = string.Empty;
 			if (response.IsSuccessStatusCode)
 			{
-				var tiedostoResult = await response.Content.ReadFromJsonAsync<ExpandoObject>() ?? new ExpandoObject();
 				json = await response.Content.ReadAsStringAsync();
 			}
 			else
@@ -82,7 +90,13 @@ namespace UusiAstia
 				throw new Exception(error);
 			}
 
-			return "";
+			return ParseTiedostoResult(json);
+
+		}
+
+		public string ParseTiedostoResult(string json)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

@@ -1,5 +1,8 @@
-﻿namespace UusiAstia
+﻿namespace AstiaClient
 {
+	using System.Threading.Tasks;
+	using Astia;
+
 	public class Program
 	{
 		public static async Task Main(string[] args)

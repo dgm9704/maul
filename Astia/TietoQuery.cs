@@ -1,4 +1,4 @@
-namespace UusiAstia
+namespace Astia
 {
 	public class TietoQuery
 	{
