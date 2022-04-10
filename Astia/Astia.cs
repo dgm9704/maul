@@ -4,6 +4,7 @@ namespace Astia
 	using System.Dynamic;
 	using System.Net.Http;
 	using System.Net.Http.Json;
+	using System.Text.Json;
 	using System.Text.Json.Nodes;
 	using System.Threading.Tasks;
 
@@ -30,44 +31,23 @@ namespace Astia
 
 		public async Task<JaksoAndTunniste> GetJaksoAndTunniste(string kuid)
 		{
-			var response = await http.GetAsync($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
-
-			JaksoAndTunniste jaksoAndTunniste = new();
-			if (response.IsSuccessStatusCode)
-			{
-				jaksoAndTunniste = await response.Content.ReadFromJsonAsync<JaksoAndTunniste>();
-			}
-			else
-			{
-				string error = await response.Content.ReadAsStringAsync();
-				throw new Exception(error);
-			}
-
-			return jaksoAndTunniste;
+			var uri = new Uri($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
+			var json = await GetAsync(uri);
+			return await ParseJaksoAndTunniste(json);
 		}
 
 		public async Task<string> GetAineistoId(JaksoAndTunniste jaksoAndTunniste)
 		{
 			TietoQuery tietoQuery = new() { searchString = $"AY_{jaksoAndTunniste.at3_ay_tunnus}", searchTarget = "aineisto" };
-
-			var response = await http.PostAsJsonAsync("https://astia.narc.fi/uusiastia/aineisto/read.php", tietoQuery);
-			string json = string.Empty;
-			if (response.IsSuccessStatusCode)
-			{
-				json = await response.Content.ReadAsStringAsync();
-			}
-			else
-			{
-				string error = await response.Content.ReadAsStringAsync();
-				throw new Exception(error);
-
-			}
-
-			return ParseAineistoResult(json);
-
+			var uri = new Uri("https://astia.narc.fi/uusiastia/aineisto/read.php");
+			var json = await PostAsync(uri, tietoQuery);
+			return await ParseAineistoResult(json);
 		}
 
-		public string ParseAineistoResult(string json)
+		public async Task<JaksoAndTunniste> ParseJaksoAndTunniste(string json)
+		=> JsonSerializer.Deserialize<JaksoAndTunniste>(json);
+
+		public async Task<string> ParseAineistoResult(string json)
 		{
 			dynamic aineistoResult = JsonObject.Parse(json);
 			JsonArray tulokset = aineistoResult["tulokset"];
@@ -98,5 +78,34 @@ namespace Astia
 		{
 			throw new NotImplementedException();
 		}
+
+		public async Task<string> GetAsync(Uri uri)
+		{
+			var response = await http.GetAsync(uri);
+			return await GetResponseContent(response);
+		}
+
+		public async Task<string> PostAsync(Uri uri, object data)
+		{
+			var response = await http.PostAsJsonAsync(uri, data);
+			return await GetResponseContent(response);
+		}
+
+		public async Task<string> GetResponseContent(HttpResponseMessage response)
+		{
+			string json = string.Empty;
+			if (response.IsSuccessStatusCode)
+			{
+				json = await response.Content.ReadAsStringAsync();
+			}
+			else
+			{
+				string error = await response.Content.ReadAsStringAsync();
+				throw new Exception(error);
+			}
+			return json;
+		}
 	}
+
+
 }

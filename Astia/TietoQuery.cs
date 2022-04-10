@@ -1,9 +1,9 @@
 namespace Astia
 {
-	public class TietoQuery
+	public record struct TietoQuery
 	{
-		public string searchString { get; set; } = string.Empty;
-		public string searchTarget { get; set; } = string.Empty;
+		public string searchString { get; set; }
+		public string searchTarget { get; set; }
 	}
 
 }

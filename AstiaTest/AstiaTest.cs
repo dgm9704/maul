@@ -17,20 +17,18 @@ namespace AstiaTest
 			Assert.Equal(expected, actual);
 		}
 
-		// //var oldUrl = args[0];
-		// var oldUrl = "http://digi.narc.fi/digi/view.ka?kuid=7137029";
+		[Fact]
+		public async Task TestGetAineistoId()
+		{
+			var astia = new Astia();
+			var jaksoAndTunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
+			var expected = "1193635722";
+			var actual = await astia.GetAineistoId(jaksoAndTunniste);
 
-		// var astia = new Astia();
+			Assert.Equal(expected, actual);
+		}
 
 
-		// //var kuid = oldUrl.Split('=').Last();
-		// var kuid = "7137029";
-
-		// //var jaksoAndtunniste = await GetJaksoAndTunniste(kuid);
-		// var jaksoAndtunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
-
-		// //var id = await GetAineistoId(jaksoAndtunniste);
-		// var id = "1193635722";
 
 		// string tiedosto = await GetTiedosto(jaksoAndtunniste, id);
 
