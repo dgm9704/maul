@@ -36,7 +36,7 @@
 	{
 		public async Task GetNewUrl(string kuid)
 		{
-			// HttpClient http = new();
+			HttpClient http = new();
 
 			// var response = await http.GetAsync($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
 
@@ -72,14 +72,31 @@
 			// 	return;
 			// }
 
-			string json = File.ReadAllText("aineistoResult.json");
+			// string json = File.ReadAllText("aineistoResult.json");
 
-			dynamic aineistoResult = JsonObject.Parse(json);
-			JsonArray tulokset = aineistoResult["tulokset"];
-			dynamic aineisto = tulokset[0];
-			dynamic id = aineisto.id;
+			// dynamic aineistoResult = JsonObject.Parse(json);
+			// JsonArray tulokset = aineistoResult["tulokset"];
+			// dynamic aineisto = tulokset[0];
+			// dynamic id = aineisto["id"];
 
-			Console.WriteLine(id);
+			// Console.WriteLine(id);
+			string id = "1193635722";
+			var response = await http.GetAsync($"https://astia.narc.fi/uusiastia/json/json_tiedostot.php?id={id}");
+			string json = string.Empty;
+			if (response.IsSuccessStatusCode)
+			{
+				var tiedostoResult = await response.Content.ReadFromJsonAsync<ExpandoObject>() ?? new ExpandoObject();
+				json = await response.Content.ReadAsStringAsync();
+				File.WriteAllText("tiedostoResult.json", json);
+			}
+			else
+			{
+				string result = await response.Content.ReadAsStringAsync();
+				Console.WriteLine(result);
+				return;
+			}
+
+
 		}
 	}
 }
