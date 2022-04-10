@@ -10,29 +10,30 @@ namespace Astia
 
 	public class Astia
 	{
-		private HttpClient http = new();
+		private HttpClient http = new(); // make me lazy
 
 		public async Task<string> GetNewUrl(string oldUrl)
 		{
 
-			//var kuid = oldUrl.Split('=').Last();
-			var kuid = "7137029";
+			// //var kuid = oldUrl.Split('=').Last();
+			// var kuid = "7137029";
 
-			//var jaksoAndtunniste = await GetJaksoAndTunniste(kuid);
-			var jaksoAndtunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
+			// //var jaksoAndtunniste = await GetJaksoAndTunniste(kuid);
+			// var jaksoAndtunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
 
-			//var id = await GetAineistoId(jaksoAndtunniste);
-			var id = "1193635722";
+			// //var id = await GetAineistoId(jaksoAndtunniste);
+			// var id = "1193635722";
 
-			string tiedosto = await GetTiedosto(jaksoAndtunniste, id);
+			// string tiedosto = await GetTiedosto(jaksoAndtunniste, id);
 
-			return oldUrl;
+			return await new Task<string>(() => oldUrl);
 		}
 
 		public async Task<JaksoAndTunniste> GetJaksoAndTunniste(string kuid)
 		{
 			var uri = new Uri($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
 			var json = await GetAsync(uri);
+			File.WriteAllText("//home/john/jaksoAndTunnisteResult.json", json);
 			return ParseJaksoAndTunniste(json);
 		}
 

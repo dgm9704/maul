@@ -3,17 +3,17 @@ namespace AstiaTest
 	using Xunit;
 	using System.Threading.Tasks;
 	using Astia;
+	using System.IO;
 
 	public class AstiaTest
 	{
 		[Fact]
-		public async Task TestGetJaksoAndTunniste()
+		public void TestParseJaksoAndTunniste()
 		{
 			var astia = new Astia();
-			var kuid = "7137029";
-			var expected = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
-			var actual = await astia.GetJaksoAndTunniste(kuid);
-
+			var expected = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = "114889", jakso = "102" };
+			var json = File.ReadAllText("jaksoAndTunnisteResult.json");
+			var actual = astia.ParseJaksoAndTunniste(json);
 			Assert.Equal(expected, actual);
 		}
 
@@ -21,7 +21,7 @@ namespace AstiaTest
 		public async Task TestGetAineistoId()
 		{
 			var astia = new Astia();
-			var jaksoAndTunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
+			var jaksoAndTunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = "114889", jakso = "102" };
 			var expected = "1193635722";
 			var actual = await astia.GetAineistoId(jaksoAndTunniste);
 
