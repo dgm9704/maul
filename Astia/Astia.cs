@@ -1,7 +1,6 @@
 namespace Astia
 {
 	using System;
-	using System.Dynamic;
 	using System.Net.Http;
 	using System.Net.Http.Json;
 	using System.Text.Json;
@@ -10,24 +9,20 @@ namespace Astia
 
 	public class Astia
 	{
-		private Lazy<HttpClient> http => new(); // make me lazy
+		private Lazy<HttpClient> http => new();
 
 		public async Task<string> GetNewUrl(string oldUrl)
 		{
-
-			// //var kuid = oldUrl.Split('=').Last();
-			// var kuid = "7137029";
-
-			// //var jaksoAndtunniste = await GetJaksoAndTunniste(kuid);
-			// var jaksoAndtunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = 114889, jakso = 102 };
-
-			// //var id = await GetAineistoId(jaksoAndtunniste);
-			// var id = "1193635722";
-
-			// string tiedosto = await GetTiedosto(jaksoAndtunniste, id);
-
-			return await new Task<string>(() => oldUrl);
+			var kuid = ParseKuid(oldUrl);
+			var jaksoAndTunniste = await GetJaksoAndTunniste(kuid);
+			var aineistoId = await GetAineistoId(jaksoAndTunniste);
+			var tiedostoId = await GetTiedosto(aineistoId, jaksoAndTunniste.jakso);
+			var newUrl = GetNewUrl(tiedostoId, aineistoId);
+			return newUrl;
 		}
+
+		public static string ParseKuid(string url)
+		=> url.Split('=').Last();
 
 		public async Task<JaksoAndTunniste> GetJaksoAndTunniste(string kuid)
 		{
@@ -82,6 +77,9 @@ namespace Astia
 
 			return "";
 		}
+
+		public static string GetNewUrl(string tiedostoId, string aineistoId)
+		=> $"https://astia.narc.fi/uusiastia/viewer/?fileId={tiedostoId}&aineistoId={aineistoId}";
 
 		public async Task<string> GetAsync(Uri uri)
 		{
