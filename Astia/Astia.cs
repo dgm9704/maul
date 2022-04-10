@@ -33,21 +33,21 @@ namespace Astia
 		{
 			var uri = new Uri($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
 			var json = await GetAsync(uri);
-			return await ParseJaksoAndTunniste(json);
+			return ParseJaksoAndTunniste(json);
 		}
+
+		public JaksoAndTunniste ParseJaksoAndTunniste(string json)
+		=> JsonSerializer.Deserialize<JaksoAndTunniste>(json);
 
 		public async Task<string> GetAineistoId(JaksoAndTunniste jaksoAndTunniste)
 		{
 			TietoQuery tietoQuery = new() { searchString = $"AY_{jaksoAndTunniste.at3_ay_tunnus}", searchTarget = "aineisto" };
 			var uri = new Uri("https://astia.narc.fi/uusiastia/aineisto/read.php");
 			var json = await PostAsync(uri, tietoQuery);
-			return await ParseAineistoResult(json);
+			return ParseAineistoResult(json);
 		}
 
-		public async Task<JaksoAndTunniste> ParseJaksoAndTunniste(string json)
-		=> JsonSerializer.Deserialize<JaksoAndTunniste>(json);
-
-		public async Task<string> ParseAineistoResult(string json)
+		public string ParseAineistoResult(string json)
 		{
 			dynamic aineistoResult = JsonObject.Parse(json);
 			JsonArray tulokset = aineistoResult["tulokset"];
@@ -56,22 +56,12 @@ namespace Astia
 			return (string)id;
 		}
 
+
 		public async Task<string> GetTiedosto(JaksoAndTunniste jaksoAndtunniste, string id)
 		{
-			var response = await http.GetAsync($"https://astia.narc.fi/uusiastia/json/json_tiedostot.php?id={id}");
-			string json = string.Empty;
-			if (response.IsSuccessStatusCode)
-			{
-				json = await response.Content.ReadAsStringAsync();
-			}
-			else
-			{
-				string error = await response.Content.ReadAsStringAsync();
-				throw new Exception(error);
-			}
-
+			var uri = new Uri("$https://astia.narc.fi/uusiastia/json/json_tiedostot.php?id={id}");
+			var json = await GetAsync(uri);
 			return ParseTiedostoResult(json);
-
 		}
 
 		public string ParseTiedostoResult(string json)
@@ -93,17 +83,10 @@ namespace Astia
 
 		public async Task<string> GetResponseContent(HttpResponseMessage response)
 		{
-			string json = string.Empty;
-			if (response.IsSuccessStatusCode)
-			{
-				json = await response.Content.ReadAsStringAsync();
-			}
-			else
-			{
-				string error = await response.Content.ReadAsStringAsync();
-				throw new Exception(error);
-			}
-			return json;
+			string json = await response.Content.ReadAsStringAsync();
+			return response.IsSuccessStatusCode
+				? json
+				: throw new Exception(json);
 		}
 	}
 
