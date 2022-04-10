@@ -1,7 +1,6 @@
 namespace AstiaTest
 {
 	using Xunit;
-	using System.Threading.Tasks;
 	using Astia;
 	using System.IO;
 
@@ -10,21 +9,19 @@ namespace AstiaTest
 		[Fact]
 		public void TestParseJaksoAndTunniste()
 		{
-			var astia = new Astia();
 			var expected = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = "114889", jakso = "102" };
 			var json = File.ReadAllText("jaksoAndTunnisteResult.json");
-			var actual = astia.ParseJaksoAndTunniste(json);
+			var actual = Astia.ParseJaksoAndTunniste(json);
+
 			Assert.Equal(expected, actual);
 		}
 
 		[Fact]
 		public void TestParseAineistoId()
 		{
-			var astia = new Astia();
-			var jaksoAndTunniste = new JaksoAndTunniste { at3_ay_tunnus = "1294995.KA", ayid = "114889", jakso = "102" };
 			var expected = "1193635722";
 			var json = File.ReadAllText("aineistoResult.json");
-			var actual = astia.ParseAineistoResult(json);
+			var actual = Astia.ParseAineistoResult(json);
 
 			Assert.Equal(expected, actual);
 		}
@@ -32,10 +29,10 @@ namespace AstiaTest
 		[Fact]
 		public void TestParseTiedostResult()
 		{
-			var astia = new Astia();
+			var jakso = "102";
 			var expected = "5829336113";
 			var json = File.ReadAllText("tiedostoResult.json");
-			var actual = astia.ParseTiedostoResult(json);
+			var actual = Astia.ParseTiedostoResult(json, jakso);
 
 			Assert.Equal(expected, actual);
 		}

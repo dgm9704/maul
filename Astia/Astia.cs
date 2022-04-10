@@ -33,11 +33,10 @@ namespace Astia
 		{
 			var uri = new Uri($"http://digi.narc.fi/fetchJaksoAndTunniste.php?kuid={kuid}");
 			var json = await GetAsync(uri);
-			File.WriteAllText("//home/john/jaksoAndTunnisteResult.json", json);
 			return ParseJaksoAndTunniste(json);
 		}
 
-		public JaksoAndTunniste ParseJaksoAndTunniste(string json)
+		public static JaksoAndTunniste ParseJaksoAndTunniste(string json)
 		=> JsonSerializer.Deserialize<JaksoAndTunniste>(json);
 
 		public async Task<string> GetAineistoId(JaksoAndTunniste jaksoAndTunniste)
@@ -48,7 +47,7 @@ namespace Astia
 			return ParseAineistoResult(json);
 		}
 
-		public string ParseAineistoResult(string json)
+		public static string ParseAineistoResult(string json)
 		{
 			dynamic aineistoResult = JsonObject.Parse(json);
 			JsonArray tulokset = aineistoResult["tulokset"];
@@ -58,16 +57,30 @@ namespace Astia
 		}
 
 
-		public async Task<string> GetTiedosto(JaksoAndTunniste jaksoAndtunniste, string id)
+		public async Task<string> GetTiedosto(string id, string jakso)
 		{
-			var uri = new Uri("$https://astia.narc.fi/uusiastia/json/json_tiedostot.php?id={id}");
+			var uri = new Uri($"https://astia.narc.fi/uusiastia/json/json_tiedostot.php?id={id}");
 			var json = await GetAsync(uri);
-			return ParseTiedostoResult(json);
+			return ParseTiedostoResult(json, jakso);
 		}
 
-		public string ParseTiedostoResult(string json)
+		public static string ParseTiedostoResult(string json, string jakso)
 		{
-			throw new NotImplementedException();
+			dynamic tiedostoResult = JsonObject.Parse(json);
+			JsonArray tiedostot = tiedostoResult["fullres"];
+			foreach (JsonObject tiedosto in tiedostot)
+			{
+				var children = tiedosto["children"];
+				var secondChild = children[1];
+				if ((string)secondChild["tagData"] == $"Tiedosto {jakso}")
+				{
+					var firstChild = children[0];
+					var result = (string)firstChild["tagData"];
+					return result;
+				}
+			}
+
+			return "";
 		}
 
 		public async Task<string> GetAsync(Uri uri)
