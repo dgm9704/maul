@@ -44,9 +44,9 @@ namespace Astia
 
 		public static string ParseAineistoResult(string json)
 		{
-			dynamic aineistoResult = JsonObject.Parse(json);
+			dynamic aineistoResult = JsonObject.Parse(json) ?? new JsonObject();
 			JsonArray tulokset = aineistoResult["tulokset"];
-			dynamic aineisto = tulokset[0];
+			dynamic aineisto = tulokset[0] ?? new JsonArray();
 			dynamic id = aineisto["id"];
 			return (string)id;
 		}
@@ -61,17 +61,17 @@ namespace Astia
 
 		public static string ParseTiedostoResult(string json, string jakso)
 		{
-			dynamic tiedostoResult = JsonObject.Parse(json);
+			dynamic tiedostoResult = JsonObject.Parse(json) ?? new JsonObject();
 			JsonArray tiedostot = tiedostoResult["fullres"];
-			foreach (JsonObject tiedosto in tiedostot)
+			foreach (var tiedosto in tiedostot)
 			{
-				var children = tiedosto["children"];
-				var secondChild = children[1];
-				if ((string)secondChild["tagData"] == $"Tiedosto {jakso}")
+				var children = tiedosto?["children"];
+				var secondChild = children?[1];
+				if (Convert.ToString(secondChild?["tagData"]) == $"Tiedosto {jakso}")
 				{
-					var firstChild = children[0];
-					var result = (string)firstChild["tagData"];
-					return result;
+					var firstChild = children?[0];
+					var result = Convert.ToString(firstChild?["tagData"]);
+					return result ?? "";
 				}
 			}
 
