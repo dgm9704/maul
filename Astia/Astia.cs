@@ -39,6 +39,7 @@ namespace Astia
 			TietoQuery tietoQuery = new() { searchString = $"AY_{jaksoAndTunniste.at3_ay_tunnus}", searchTarget = "aineisto" };
 			var uri = new Uri("https://astia.narc.fi/uusiastia/aineisto/read.php");
 			var json = await PostAsync(uri, tietoQuery);
+			File.WriteAllText("aineistoresult.json", json);
 			return ParseAineistoResult(json);
 		}
 
