@@ -16,9 +16,17 @@ namespace Astia
 			var kuid = ParseKuid(oldUrl);
 			var jaksoAndTunniste = await GetJaksoAndTunniste(kuid);
 			var aineistoId = await GetAineistoId(jaksoAndTunniste);
-			var tiedostoId = await GetTiedosto(aineistoId, jaksoAndTunniste.jakso);
-			var newUrl = GetNewUrl(tiedostoId, aineistoId);
-			return newUrl;
+			if (!string.IsNullOrEmpty(aineistoId))
+			{
+				var tiedostoId = await GetTiedosto(aineistoId, jaksoAndTunniste.jakso);
+				var newUrl = GetNewUrl(tiedostoId, aineistoId);
+				return newUrl;
+			}
+			else
+			{
+				Console.WriteLine($"aineistoId failed for jaksoAndtunniste {jaksoAndTunniste}");
+				return string.Empty;
+			}
 		}
 
 		public static string ParseKuid(string url)
@@ -47,9 +55,17 @@ namespace Astia
 		{
 			dynamic aineistoResult = JsonObject.Parse(json) ?? new JsonObject();
 			JsonArray tulokset = aineistoResult["tulokset"];
-			dynamic aineisto = tulokset[0] ?? new JsonArray();
-			dynamic id = aineisto["id"];
-			return (string)id;
+			if (tulokset != null)
+			{
+				dynamic aineisto = tulokset[0] ?? new JsonArray();
+				dynamic id = aineisto["id"];
+				return (string)id;
+			}
+			else
+			{
+				Console.WriteLine($"Tulokset is null");
+				return string.Empty;
+			}
 		}
 
 
@@ -64,18 +80,24 @@ namespace Astia
 		{
 			dynamic tiedostoResult = JsonObject.Parse(json) ?? new JsonObject();
 			JsonArray tiedostot = tiedostoResult["fullres"];
-			foreach (var tiedosto in tiedostot)
+			if (tiedostot != null)
 			{
-				var children = tiedosto?["children"];
-				var secondChild = children?[1];
-				if (Convert.ToString(secondChild?["tagData"]) == $"Tiedosto {jakso}")
+				foreach (var tiedosto in tiedostot)
 				{
-					var firstChild = children?[0];
-					var result = Convert.ToString(firstChild?["tagData"]);
-					return result ?? "";
+					var children = tiedosto?["children"];
+					var secondChild = children?[1];
+					if (Convert.ToString(secondChild?["tagData"]) == $"Tiedosto {jakso}")
+					{
+						var firstChild = children?[0];
+						var result = Convert.ToString(firstChild?["tagData"]);
+						return result ?? "";
+					}
 				}
 			}
-
+			else
+			{
+				Console.WriteLine($"Tiedostot is null, jakso: {jakso}");
+			}
 			return "";
 		}
 
